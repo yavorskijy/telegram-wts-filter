@@ -2,7 +2,7 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, MessageHandler, filters, ContextTypes
 import os
 
-TOKEN = os.getenv("8757949179:AAHZ4HiqD1xkjPp_0RVo9_GD00DZhsUh5m8")
+TOKEN = os.getenv("BOT_TOKEN")
 
 allowed_words = ["wts", "wtb", "#wts", "#wtb"]
 
@@ -28,5 +28,6 @@ app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(MessageHandler(filters.TEXT, filter_messages))
 
 print("Bot started")
+
 
 app.run_polling()
