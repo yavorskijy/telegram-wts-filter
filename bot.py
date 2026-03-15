@@ -54,7 +54,7 @@ async def reminder_loop(app):
             except Exception as e:
                 print(e)
 
-        await asyncio.sleep(30)
+        await asyncio.sleep(3600)
 
 
 async def on_startup(app):
