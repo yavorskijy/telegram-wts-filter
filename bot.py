@@ -9,24 +9,24 @@ allowed_words = ["wts", "wtb", "#wts", "#wtb"]
 
 REMINDER_TEXT = """Для безопасной сделки используйте гаранта @delta_otc.
 
-
 For a secure deal, use escrow @delta_otc.
 
 @SHVEDOFFRECORD @nekitdelta
 """
 
-chat_id = None
+IMAGE_PATH = "banner.jpg"
+
+chats = set()
 
 
 async def filter_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    global chat_id
-    
     message = update.message
-    
+
     if not message:
         return
 
     chat_id = message.chat_id
+    chats.add(chat_id)
 
     if not message.text:
         return
@@ -41,16 +41,20 @@ async def filter_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def reminder_loop(app):
-    global chat_id
-    
     while True:
-        if chat_id:
+
+        for chat_id in chats:
             try:
-                await app.bot.send_message(chat_id=chat_id, text=REMINDER_TEXT)
-            except:
-                pass
-        
-        await asyncio.sleep(3600)  # 1 година
+                with open(IMAGE_PATH, "rb") as photo:
+                    await app.bot.send_photo(
+                        chat_id=chat_id,
+                        photo=photo,
+                        caption=REMINDER_TEXT
+                    )
+            except Exception as e:
+                print(e)
+
+        await asyncio.sleep(3600)
 
 
 async def on_startup(app):
