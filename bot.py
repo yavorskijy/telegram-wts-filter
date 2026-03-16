@@ -17,6 +17,7 @@ For a secure deal, use escrow @delta_otc.
 IMAGE_PATH = "banner.jpg"
 
 chats = set()
+last_reminders = {}
 
 
 async def filter_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -28,10 +29,7 @@ async def filter_messages(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = message.chat_id
     chats.add(chat_id)
 
-    if not message.text:
-        return
-
-    text = message.text.lower()
+    text = (message.text or message.caption or "").lower()
 
     if not any(word in text for word in allowed_words):
         try:
@@ -45,12 +43,28 @@ async def reminder_loop(app):
 
         for chat_id in chats:
             try:
+
+                # видаляємо попереднє нагадування
+                if chat_id in last_reminders:
+                    try:
+                        await app.bot.delete_message(
+                            chat_id=chat_id,
+                            message_id=last_reminders[chat_id]
+                        )
+                    except:
+                        pass
+
+                # відправляємо нове
                 with open(IMAGE_PATH, "rb") as photo:
-                    await app.bot.send_photo(
+                    msg = await app.bot.send_photo(
                         chat_id=chat_id,
                         photo=photo,
                         caption=REMINDER_TEXT
                     )
+
+                # зберігаємо ID повідомлення
+                last_reminders[chat_id] = msg.message_id
+
             except Exception as e:
                 print(e)
 
@@ -63,7 +77,7 @@ async def on_startup(app):
 
 app = ApplicationBuilder().token(TOKEN).post_init(on_startup).build()
 
-app.add_handler(MessageHandler(filters.TEXT, filter_messages))
+app.add_handler(MessageHandler(filters.ALL, filter_messages))
 
 print("Bot started")
 
